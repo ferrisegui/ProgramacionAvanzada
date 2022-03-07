@@ -1,5 +1,4 @@
-package Practica1;
-
+import Practica1.*;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -11,7 +10,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 class TableTest {
-        Table tabla =CSV.readTable("miles_dollars.csv");
+        Table tabla = CSV.readTable("miles_dollars.csv");
         Row row2 = tabla.getRowAt(1);
         List<Double> fila = row2.getData();
         List<Double> columna = tabla.getColumAt(1);

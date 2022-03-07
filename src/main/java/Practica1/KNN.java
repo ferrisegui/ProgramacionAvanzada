@@ -1,69 +1,107 @@
 package Practica1;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+
+import java.util.*;
+
 
 public class KNN {
-    private Double alpha;
-    private Double beta;
 
-    public KNN(){
-        alpha = 0.0;
-        beta = 0.0;
-    }
+    private class DistanciaDatos implements Comparable<DistanciaDatos> {
+        double distancia;
+        String tipo;
 
-    public void train(Table tabla){
-        double numerador = 0.0;
-        double denominador = 0.0;
-        Double mediaX = 0.0;
-        Double mediaY = 0.0;
-        List<Double> lisX = tabla.getColumAt(0);
-        List<Double> listY = tabla.getColumAt(1);
-
-        for (Double datosX: tabla.getColumAt(0)){
-            mediaX+=datosX;
+        public DistanciaDatos(double distancia, String tipo) {
+            this.distancia = distancia;
+            this.tipo = tipo;
         }
-        mediaX = mediaX/tabla.getNumFilas();
 
-        for (Double datosY: tabla.getColumAt(1)){
-            mediaY+=datosY;
+        @Override
+        public int compareTo(DistanciaDatos o) {
+            return Double.compare(distancia, o.getDistancia());
         }
-        mediaY = mediaY/tabla.getNumFilas();
 
-        for (int i =0; i < tabla.getNumFilas(); i++){
-            numerador += (lisX.get(i)-mediaX) * (listY.get(i)-mediaY);
-            denominador += Math.pow((lisX.get(i)-mediaX),2);
-
-
+        public double getDistancia() {
+            return distancia;
         }
-        alpha = numerador / denominador;
-        beta = mediaY - alpha*mediaX;
+
+        public String getTipo() {
+            return tipo;
+        }
     }
 
-    public Double estimate(Double sample){
-        return alpha * sample + beta;
+    private int knn;
+    private Map<List<Double>,String> dataTable;
+
+    public KNN(int knn, HashMap<List<Double>, String> data){
+        this.knn = knn;
+        this.dataTable = data;
     }
 
-    public Double getAlpha() {
-        return alpha;
+    public void train(TableWithLabels data) {
+        for (int i = 0; i < data.getNumFilas(); i++){
+            dataTable.put(data.getRowAt(i).getData(),data.getRowAt(i).getLabel());
+        }
     }
 
-    public void setAlpha(Double alpha) {
-        this.alpha = alpha;
+    public String estimate(List<Double> sample) {
+        Double[] sampleArray = sample.toArray(new Double[0]);
+        List<DistanciaDatos> distances = addDistancias(sampleArray);
+        Collections.sort(distances);
+        DistanciaDatos[] vecinos = new DistanciaDatos[knn]; //selectKNearestNeighbors(distances);
+        for (int i = 0; i < knn; i++){
+            vecinos[i] = distances.get(i);
+        }
+        Map<String, Integer> repeticiones = new HashMap<>();
+        for (DistanciaDatos neighbour: vecinos) {
+            if (!repeticiones.containsKey(neighbour.getTipo())){
+                repeticiones.put(neighbour.getTipo(), 1);
+            }else{
+                int numRepeticiones = repeticiones.get(neighbour.getTipo());
+                repeticiones.put(neighbour.getTipo(), numRepeticiones + 1);
+            }
+        }
+        List<Map.Entry<String, Integer>> ordenarMap = new LinkedList<>(repeticiones.entrySet());
+        Collections.sort(ordenarMap, Map.Entry.comparingByValue());
+        return ordenarMap.get(ordenarMap.size()-1).getKey();
     }
 
-    public Double getBeta() {
-        return beta;
+    private List<DistanciaDatos> addDistancias(Double[] sample){
+        List<DistanciaDatos> distancias = new ArrayList<>();
+        for (Map.Entry<List<Double>, String> entry : dataTable.entrySet()){
+            Double[] distance = entry.getKey().toArray(new Double[0]);
+            distancias.add(new DistanciaDatos(distanciaDeEuclide(distance, sample), entry.getValue()));
+        }
+        return distancias;
     }
 
-    public void setBeta(Double beta) {
-        this.beta = beta;
+    public static double distanciaDeEuclide(Double[] desde, Double[] hasta){
+        double distance = 0;
+
+        for (int i=0;i<desde.length;i++){
+            distance += Math.pow(desde[i]-hasta[i],2);
+        }
+
+        return Math.sqrt(distance);
     }
 
-    @Override
-    public String toString() {
-        return "RegresionLineal{" +
-                "alpha=" + alpha +
-                ", beta=" + beta +
-                '}';
+    public int getKnn() {
+        return knn;
+    }
+
+    public void setKnn(int knn) {
+        this.knn = knn;
+    }
+
+    public Map<List<Double>, String> getDataTable() {
+        return dataTable;
+    }
+
+    public void setDataTable(Map<List<Double>, String> dataTable) {
+        this.dataTable = dataTable;
     }
 }

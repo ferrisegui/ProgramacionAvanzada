@@ -1,5 +1,6 @@
-package Practica1;
-
+import Practica1.CSV;
+import Practica1.RegresionLineal;
+import Practica1.Table;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -9,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class RegresionLinealTest {
 
-    Table tabla =CSV.readTable("miles_dollars.csv");
+    Table tabla = CSV.readTable("miles_dollars.csv");
 
     RegresionLineal regresionLineal = new RegresionLineal();
 
